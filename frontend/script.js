@@ -1,4 +1,4 @@
-
+try{var th=localStorage.getItem("fyr-theme");if(th)document.documentElement.dataset.theme=th}catch(x){}
 var ROOMS=24,OCC=19,PREV=[38400,41200,39800,44100,42600];
 var MON=["Jun","Jul","Aug","Sep","Oct","Nov"];
 var T=[
@@ -58,8 +58,8 @@ document.addEventListener("click",function(e){
  var b=e.target.closest("button");if(!b)return;
  if(b.dataset.a){act(b.dataset.a,b.dataset,b);return}
  if(b.id==="svp"){var an=$("an").value.trim(),ac=$("ac").value.replace(/\D/g,""),pe=$("perr");
-  if(!an){pe.textContent="Enter the account name students should see.";$("an").focus();return}
-  if(ac.length<10||ac.length>13){pe.textContent="Account number should be 10 to 13 digits.";$("ac").focus();return}
+  if(!an)return bad($("an"),pe,"Enter the account name students should see.");
+  if(ac.length<10||ac.length>13)return bad($("ac"),pe,"Account number should be 10 to 13 digits.");
   pe.textContent="";b.classList.add("busy");b.innerHTML='<span class="sp"></span>Saving';
   setTimeout(function(){PAY={w:$("wt").value,name:an,num:ac.replace(/^(\d{4})(\d{3})(\d+)$/,"$1 $2 $3")};b.classList.remove("busy");b.classList.add("ok");b.innerHTML=ic("chk")+"Saved";$("an").value=PAY.name;$("ac").value=PAY.num;$("upn").textContent="Details saved. Students see this when they pay."},600);
   setTimeout(function(){b.classList.remove("ok");b.textContent="Save details";b.disabled=true},2000);return}
@@ -132,12 +132,15 @@ function syncLights(inst){["nav","bot"].forEach(function(id,i){var b=$(id).query
 window.addEventListener("resize",function(){syncLights(true)});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){syncLights(true)});
 /* swipe-down to dismiss: tracks the finger 1:1, carries release speed */
-(function(){var g=$("grab"),d=$("dlg"),y0=0,dy=0,t0=0,on=false;
- g.addEventListener("pointerdown",function(e){on=true;y0=e.clientY;t0=e.timeStamp;dy=0;d.style.transition="none";g.setPointerCapture(e.pointerId)});
- g.addEventListener("pointermove",function(e){if(!on)return;dy=Math.max(0,e.clientY-y0);d.style.transform="translateY("+dy+"px)"});
- function end(e){if(!on)return;on=false;var v=dy/Math.max(1,e.timeStamp-t0);d.style.transition="transform .28s cubic-bezier(.23,1,.32,1)";
-  if(dy>110||v>.6){d.style.transform="translateY(100%)";setTimeout(function(){d.close();d.style.transform="";d.style.transition=""},260)}
-  else{d.style.transform="";setTimeout(function(){d.style.transition=""},300)}}
+(function(){var g=$("grab"),d=$("dlg"),y0=0,dy=0,ly=0,lt=0,vy=0,on=false;
+ g.addEventListener("pointerdown",function(e){on=true;y0=ly=e.clientY;lt=e.timeStamp;dy=0;vy=0;g.setPointerCapture(e.pointerId)});
+ g.addEventListener("pointermove",function(e){if(!on)return;
+  var dt=Math.max(1,e.timeStamp-lt);vy=.6*vy+.4*((e.clientY-ly)/dt*1000);ly=e.clientY;lt=e.timeStamp;
+  var raw=e.clientY-y0;
+  if(raw<0){var over=Math.max(0,-raw-12);dy=-64*(over/(over+150))}else dy=raw;
+  d.style.transform="translateY("+dy+"px)"});
+ function end(){if(!on)return;on=false;var out=dy>110||vy>700;
+  spring(dy,out?innerHeight:0,vy,function(x){d.style.transform="translateY("+x+"px)"},function(){if(out)HTMLDialogElement.prototype.close.call(d);d.style.transform=""})}
  g.addEventListener("pointerup",end);g.addEventListener("pointercancel",end)})();
 /* views, counters, morphing states */
 var flashId=0,tp=null,qrSeed=1,shown="Dashboard";
@@ -157,7 +160,7 @@ function count(el,to,fmt){var from=el._v==null?0:el._v;el._v=to;cancelAnimationF
 function tabInd(){var box=$("tabs"),on=box.querySelector('[aria-pressed="true"]');if(!on||!box.offsetWidth)return;
  var i=document.createElement("i");i.className="tind";box.appendChild(i);
  var to={l:on.offsetLeft,t:on.offsetTop,w:on.offsetWidth,h:on.offsetHeight},fr=tp||to;
- var sty=function(o){i.style.cssText="left:"+o.l+"px;top:"+o.t+"px;width:"+o.w+"px;height:"+o.h+"px"};
+ var sty=function(o){i.style.cssText="left:0;top:0;width:"+o.w+"px;height:"+o.h+"px;transform:translate("+o.l+"px,"+o.t+"px)"};
  sty(fr);if(tp&&(tp.l!==to.l||tp.t!==to.t||tp.w!==to.w)){void i.offsetWidth;sty(to)}tp=to}
 function qrSvg(sd){var s="",y,x;for(y=0;y<21;y++)for(x=0;x<21;x++){var fx=x<7?0:x>13?14:-1,fy=y<7?0:y>13?14:-1,on;
   if(fx>=0&&fy>=0&&!(fx===14&&fy===14)){var a=x-fx,c=y-fy;on=a===0||a===6||c===0||c===6||(a>1&&a<5&&c>1&&c<5)}
@@ -167,7 +170,7 @@ function qrSvg(sd){var s="",y,x;for(y=0;y<21;y++)for(x=0;x<21;x++){var fx=x<7?0:
  return '<svg viewBox="0 0 21 21" role="img" aria-label="Sample payment QR code" shape-rendering="crispEdges">'+s+'</svg>'}
 function trow(t){return '<div class="row"><div class="who"><span class="av" style="--h:'+t.h+'">'+ini(t.n)+'</span><div><b>'+t.n+'</b><span class="small">'+t.r+'</span></div></div><div class="am amt">'+peso(t.a)+'</div><div class="du small">Due '+t.d+'</div><div class="st"><span class="chip '+t.s+'">'+ic(L[t.s][0])+L[t.s][1]+'</span></div><div class="ac">'+(t.s==="pending"?'<button class="btn sm" data-id="'+t.id+'">Review</button>':'')+'</div></div>'}
 var VIEWS={
- Buildings:function(){return hd("Buildings",plu(ROOMS,"room","rooms")+" across "+plu(B.length,"building","buildings")+".")+'<div class="bento">'+B.map(function(b){var p=Math.round(b[2]/b[3]*100);return '<section class="card c4"><h2>'+b[0]+'</h2><div class="big">'+p+'%</div><div class="small">'+b[2]+' of '+plu(b[3],"room","rooms")+' filled</div><div class="meter"><i style="width:'+p+'%"></i></div><p class="small" style="margin:0">'+b[1]+'</p></section>'}).join("")+'</div>'},
+ Buildings:function(){return hd("Buildings",plu(ROOMS,"room","rooms")+".")+'<div class="bento">'+B.map(function(b){var p=Math.round(b[2]/b[3]*100);return '<section class="card c4"><h2>'+b[0]+'</h2><div class="big">'+p+'%</div><div class="small">'+b[2]+' of '+plu(b[3],"room","rooms")+' filled</div><div class="meter"><i style="width:'+p+'%"></i></div><p class="small" style="margin:0">'+b[1]+'</p></section>'}).join("")+'</div>'},
  Requests:function(){var o=REQ.filter(function(r){return!r.d}).length;return hd("Requests",o?plu(o,"student","students")+" waiting for a reply.":"You’re all caught up.")+'<section class="card" style="padding:6px 24px">'+REQ.map(function(r){return '<div class="rq'+(r.d?' gone':'')+'"><div class="rqi"><div class="rqr"><div class="who"><span class="av" style="--h:'+r.h+'">'+ini(r.n)+'</span><div><b>'+r.n+'</b><span class="small">'+r.r+'</span></div></div><div class="ra"><button class="btn sec sm" data-rq="decline" data-rid="'+r.id+'">Decline</button><button class="btn sm" data-rq="approve" data-rid="'+r.id+'">Approve</button></div></div></div></div>'}).join("")+'<div class="empty" id="rqe"'+(o?' hidden':'')+'>No pending requests. New ones show up here.</div></section>'},
  Payments:function(){var pe=T.filter(function(t){return t.s==="pending"}).length;return hd("Payments",pe?plu(pe,"receipt","receipts")+" waiting for review.":"Every receipt is reviewed.")+'<section class="card" style="padding:0;overflow:hidden">'+T.map(trow).join("")+'</section>'},
  "QR code":function(){return hd("Payment QR","Students see this when they pay rent.")+'<section class="card qrc"><div class="qr" id="qr">'+qrSvg(qrSeed)+'</div><div class="qside"><div class="kv"><span>Wallet</span><b>GCash</b></div><div class="kv"><span>Account</span><b>Liza M. · 0917 ••• 4821</b></div><button class="btn" id="up">Replace QR image</button><p class="small" id="upn" style="margin:0">Sample QR for the prototype.</p></div></section>'}};
@@ -203,7 +206,7 @@ function bform(b){dlgOpen('<h3>'+(b?"Edit building":"Add new building")+'</h3>'+
 function rform(b,r){var oc=r&&r.st==="occupied";dlgOpen('<h3>'+(r?"Edit room":"Add new room")+'</h3><p class="small" style="margin:-8px 0 0">'+esc(b.n)+'</p>'+fld("fn","Room number",r?r.no:"",'placeholder="e.g. 6" autocomplete="off"')+'<div class="two">'+fld("rc","Capacity",r?r.cap:2,'type="number" min="1" inputmode="numeric"')+fld("rr","Monthly rate (₱)",r?r.rate:"",'type="number" min="1" inputmode="numeric" placeholder="2500"')+'</div><div class="fld"><label for="rs">Status</label><select id="rs"'+(oc?' disabled':'')+'>'+["available","occupied","maintenance"].map(function(s){return '<option value="'+s+'"'+((r?r.st:"available")===s?' selected':'')+(s==="occupied"&&!oc?' disabled':'')+'>'+RS[s][2]+'</option>'}).join("")+'</select></div><div class="err" id="ferr" role="alert"></div><div class="acts"><button class="btn sec" data-a="cx">Cancel</button><button class="btn" id="sv" data-a="svr" data-i="'+b.id+'" data-r="'+(r?r.id:"")+'">'+(r?"Save changes":"Add room")+'</button></div>');setTimeout(function(){$("fn").focus()},60)}
 function confirmDel(k,b,r){var oc=k==="b"?b.rooms.filter(function(x){return x.st==="occupied"}).length:(r.st==="occupied"?1:0),nm=k==="b"?b.n:"Room "+r.no;
  if(oc){dlgOpen('<h3>Can’t delete '+esc(nm)+'</h3><p class="small">'+(k==="b"?plu(oc,"room is","rooms are"):"This room is")+' occupied. End the tenancy first, then delete.</p><div class="acts"><button class="btn" data-a="cx">Got it</button></div>');return}
- dlgOpen('<h3>Delete '+esc(nm)+'?</h3><p class="small">'+(k==="b"?"Its "+plu(b.rooms.length,"room","rooms")+" will be removed too. ":"")+'This can’t be undone.</p><div class="acts"><button class="btn sec" data-a="cx">Cancel</button><button class="btn dng" data-a="cfd" data-k="'+k+'" data-i="'+b.id+'"'+(r?' data-r="'+r.id+'"':'')+'>Delete</button></div>')}
+ dlgOpen("<h3>Delete "+esc(nm)+"?</h3><p class=\"small\">This can’t be undone.</p><div class=\"acts\"><button class=\"btn sec\" data-a=\"cx\">Cancel</button><button class=\"btn dng\" data-a=\"cfd\" data-k=\""+k+"\" data-i=\""+b.id+"\"></button></div>")}
 function endDlg(id){var t=T.filter(function(x){return x.id===id})[0];dlgOpen('<h3>End tenancy for '+esc(t.n)+'?</h3><p class="small">'+esc(t.r)+' becomes available right away. Payment history stays in the archive.</p><div class="acts"><button class="btn sec" data-a="cx">Keep tenant</button><button class="btn dng" data-a="cfe" data-i="'+id+'">End tenancy</button></div>')}
 function act(a,d,btn){var b=B.filter(function(x){return x.id===d.i})[0],rm=b&&d.r?b.rooms.filter(function(x){return String(x.id)===d.r})[0]:null;
  if(a==="addb")bform();
@@ -218,14 +221,14 @@ function act(a,d,btn){var b=B.filter(function(x){return x.id===d.i})[0],rm=b&&d.
  else if(a==="pt"){PT=d.i;SW=1;refresh();SW=0}
  else if(a==="endt")endDlg(+d.i);
  else if(a==="svb"){var n=$("fn").value.trim(),ad=$("fa").value.trim(),e=$("ferr");
-  if(!n){e.textContent="Enter a building name.";$("fn").focus();return}
-  if(!ad){e.textContent="Enter the address so students can find it.";$("fa").focus();return}
+  if(!n)return bad($("fn"),e,"Enter a building name.");
+  if(!ad)return bad($("fa"),e,"Enter the address so students can find it.");
   morph(btn,"Saving","Saved",function(){if(b){b.n=n;b.a=ad}else B.push({id:"b"+nid++,n:n,a:ad,rooms:[]});refresh();toast(b?"Building updated.":"Building added.")})}
  else if(a==="svr"){var no=$("fn").value.trim(),cap=parseInt($("rc").value,10),rate=parseFloat($("rr").value),er=$("ferr");
-  if(!no){er.textContent="Enter a room number.";$("fn").focus();return}
-  if(b.rooms.some(function(x){return x.no===no&&x!==rm})){er.textContent="This building already has a room "+no+".";$("fn").focus();return}
-  if(!(cap>=1)){er.textContent="Capacity must be at least 1.";$("rc").focus();return}
-  if(!(rate>0)){er.textContent="Enter the monthly rate.";$("rr").focus();return}
+  if(!no)return bad($("fn"),er,"Enter a room number.");
+  if(b.rooms.some(function(x){return x.no===no&&x!==rm}))return bad($("fn"),er,"This building already has a room "+no+".");
+  if(!(cap>=1))return bad($("rc"),er,"Capacity must be at least 1.");
+  if(!(rate>0))return bad($("rr"),er,"Enter the monthly rate.");
   var st=$("rs").value;
   morph(btn,"Saving","Saved",function(){if(rm){rm.no=no;rm.cap=cap;rm.rate=rate;rm.st=st}else b.rooms.push({id:nid++,no:no,cap:cap,rate:rate,st:st});refresh();toast(rm?"Room updated.":"Room added.")})}
  else if(a==="cfd"){morph(btn,"Deleting","Deleted",function(){if(d.k==="b"){B.splice(B.indexOf(b),1);if(bsel===b.id)bsel=null}else b.rooms.splice(b.rooms.indexOf(rm),1);refresh();toast(d.k==="b"?"Building deleted.":"Room deleted.")})}
@@ -274,5 +277,48 @@ function showViewOld(p,prev){
  var out=o.animate([{opacity:1,transform:"none",filter:"blur(0px)"},{opacity:0,transform:"translateX("+(-dir*18)+"px)",filter:"blur(2px)"}],{duration:140,easing:E,fill:"forwards"});
  out.onfinish=function(){o.hidden=true;out.cancel();shown=p;n.hidden=false;window.scrollTo(0,0);stag(n);
   n.animate([{opacity:0,transform:"translateX("+(dir*18)+"px)",filter:"blur(2px)"},{opacity:1,transform:"none",filter:"blur(0px)"}],{duration:280,easing:E})}}
+/* 3. shake on error */
+function bad(f,m,t){m.textContent=t;f.classList.add("error");f.focus();
+ if(!matchMedia(RM).matches)f.animate({translate:["0px","-10px","10px","-6px","6px","-3px","3px","0px"]},{duration:360,easing:"ease-out"})}
+document.addEventListener("input",function(e){if(e.target.classList)e.target.classList.remove("error")});
+
+/* 4. directional slide between two steps */
+function slideSwap(host,dir,change){
+ var old=host.querySelector("section.card");
+ if(!old||matchMedia(RM).matches){change();return}
+ var hr=host.getBoundingClientRect(),r=old.getBoundingClientRect(),ghost=old.cloneNode(true);
+ change();
+ var nw=host.querySelector("section.card");if(!nw)return;
+ host.style.position="relative";host.style.overflowX="clip";
+ ghost.style.cssText="position:absolute;top:"+(r.top-hr.top)+"px;left:"+(r.left-hr.left)+"px;width:"+r.width+"px;margin:0;pointer-events:none";
+ host.appendChild(ghost);
+ var o={duration:350,easing:"cubic-bezier(.77,0,.175,1)"};
+ ghost.animate({translate:["0px 0px",(-dir*100)+"% 0px"]},o).onfinish=function(){ghost.remove();host.style.position="";host.style.overflowX=""};
+ nw.animate({translate:[(dir*100)+"% 0px","0px 0px"]},o)}
+
+/* 7. instant theme switch + remember the choice */
+$("theme").addEventListener("click",function(){
+ var r=document.documentElement,dark=r.dataset.theme?r.dataset.theme=== "dark":matchMedia("(prefers-color-scheme:dark)").matches,next=dark?"light":"dark";
+ r.classList.add("theme-switching");r.dataset.theme=next;try{localStorage.setItem("fyr-theme",next)}catch(x){}
+ requestAnimationFrame(function(){requestAnimationFrame(function(){r.classList.remove("theme-switching")})})});
+
+/* 8. tooltip: 600ms to open, then neighbours open instantly for 300ms */
+var tip=document.createElement("div");tip.id="tip";tip.setAttribute("role","tooltip");document.body.appendChild(tip);
+var tipT=0,tipLast=0,tipOn=false,TIP_DELAY=600,TIP_SKIP=300;
+function tipEl(t){var el=t.closest&&t.closest("[title],[data-tip]");if(el&&el.hasAttribute("title")){el.dataset.tip=el.getAttribute("title");el.removeAttribute("title")}return el&&el.dataset.tip?el:null}
+function tipShow(el,instant){tip.textContent=el.dataset.tip;var r=el.getBoundingClientRect();tip.classList.toggle("instant",instant);tip.style.left=Math.min(innerWidth-8,Math.max(8,r.left+r.width/2))+"px";tip.style.top=(r.bottom+8)+"px";tip.classList.add("on");tipOn=true}
+function tipHide(){clearTimeout(tipT);if(tipOn)tipLast=performance.now();tipOn=false;tip.classList.remove("on")}
+function tipGo(el){clearTimeout(tipT);if(tipOn||performance.now()-tipLast<TIP_SKIP)tipShow(el,true);else tipT=setTimeout(function(){tipShow(el,false)},TIP_DELAY)}
+document.addEventListener("pointerover",function(e){if(e.pointerType=== "touch")return;var el=tipEl(e.target);if(el&&!(e.relatedTarget&&el.contains(e.relatedTarget)))tipGo(el)});
+document.addEventListener("pointerout",function(e){var el=e.target.closest&&e.target.closest("[data-tip]");if(el&&!(e.relatedTarget&&el.contains(e.relatedTarget)))tipHide()});
+document.addEventListener("pointerdown",tipHide);
+document.addEventListener("focusin",function(e){if(e.target.matches&&e.target.matches(" :focus-visible")){var el=tipEl(e.target);if(el)tipShow(el,true)}});
+document.addEventListener("focusout",tipHide);
+
+/* 9. velocity spring (bounce 0, about 0.5s) that keeps the finger's speed */
+function spring(from,to,v,step,done){var k=158,c=25,x=from,last=performance.now();
+ (function f(now){var h=Math.min(.032,(now-last)/1000);last=now;for(var i=0;i<4;i++){var dt=h/4;v+=(-k*(x-to)-c*v)*dt;x+=v*dt}step(x);
+  if(Math.abs(x-to)>.4||Math.abs(v)>8)requestAnimationFrame(f);else{step(to);if(done)done()}})(last)}
+
 render();
 syncLights(true);
