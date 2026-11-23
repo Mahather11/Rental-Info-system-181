@@ -13,7 +13,7 @@ var T=[
 ];
 var F="all",Q="",cur=null,page="Dashboard";
 var L={paid:["chk","Paid"],pending:["clk","Awaiting review"],overdue:["alr","Overdue"],rejected:["rtn","Resubmit needed"]};
-var NAV=[["Dashboard","grid"],["Buildings","bld"],["Requests","inb"],["Payments","wal"],["QR code","qr"]];
+var NAV=[["Dashboard","grid"],["Buildings","bld"],["Requests","inb"],["Payments","wal"],["QR code","qr"],["Profile","user"]];
 var $=function(i){return document.getElementById(i)};
 var peso=function(n){return "₱"+n.toLocaleString("en-PH")};
 var ini=function(n){return n.split(" ").map(function(w){return w[0]}).slice(0,2).join("")};
@@ -27,6 +27,9 @@ function nav(){
  [].forEach.call(document.querySelectorAll(".tnav .n"),function(e){var k=e.parentNode.dataset.p;if(lastBd[k]!=null&&lastBd[k]!==e.textContent)e.classList.add("bump");lastBd[k]=e.textContent});
  if(lastNP!==null&&lastNP!==page)[].forEach.call(document.querySelectorAll('[aria-current="page"] svg'),function(s){s.classList.add("ipop")});
  lastNP=page;
+ var prof=$("me");if(prof)prof.toggleAttribute("aria-current",page=== "Profile");
+ var onP=page=== "Profile";$("nav").classList.toggle("off",onP);$("bot").classList.toggle("off",onP);
+ if(onP)$("me").setAttribute("aria-current","page");else $("me").removeAttribute("aria-current");
  if(window.LT)syncLights();
 }
 function render(){
@@ -62,7 +65,12 @@ document.addEventListener("click",function(e){
   if(ac.length<10||ac.length>13)return bad($("ac"),pe,"Account number should be 10 to 13 digits.");
   pe.textContent="";b.classList.add("busy");b.innerHTML='<span class="sp"></span>Saving';
   setTimeout(function(){PAY={w:$("wt").value,name:an,num:ac.replace(/^(\d{4})(\d{3})(\d+)$/,"$1 $2 $3")};b.classList.remove("busy");b.classList.add("ok");b.innerHTML=ic("chk")+"Saved";$("an").value=PAY.name;$("ac").value=PAY.num;$("upn").textContent="Details saved. Students see this when they pay."},600);
-  setTimeout(function(){b.classList.remove("ok");b.textContent="Save details";b.disabled=true},2000);return}
+  setTimeout(function(){b.classList.remove("ok");b.disabled=true},2000);return}
+ if(b.id==="me"){if(page!=="Profile"){var pv=page;page="Profile";nav();showView("Profile",pv)}return}
+ if(b.id==="svpf"){saveProf(b);return}
+ if(b.id==="updp"){savePw(b);return}
+ if(b.id==="lo"){dlgOpen('<h3>Log out of Find Your Room?</h3><p class="small">You\u2019ll need to sign in again to manage your dormitory.</p><div class="acts"><button class="btn sec" data-a="cx">Stay signed in</button><button class="btn dng" id="lo2">Log Out</button></div>');return}
+ if(b.id==="lo2"){morph(b,"Logging out","Logged out",function(){toast("Logged out. Redirecting to login...")});return}
  if(b.id==="clr"){$("s").value="";Q="";$("s").parentNode.classList.remove("has");render();$("s").focus();return}
  if(b.dataset.rq){var rid=+b.dataset.rid,r=REQ.filter(function(x){return x.id===rid})[0],row=b.closest(".rq"),ap=b.dataset.rq==="approve";if(r.d)return;r.d=1;if(ap)occupy(r);
   row.querySelector(".ra").innerHTML='<span class="chip pop '+(ap?"paid":"rejected")+'">'+ic(ap?"chk":"alr")+(ap?"Approved":"Declined")+'</span>';
@@ -150,7 +158,16 @@ var B=[
 {id:"C",n:"Building C",a:"Bula Road, Midsayap",rooms:[{id:10,no:"2",cap:2,rate:2800,st:"occupied"},{id:11,no:"4",cap:2,rate:2800,st:"available"},{id:12,no:"6",cap:2,rate:2800,st:"occupied"}]}];
 var REQ=[{id:1,n:"Hadji Pendatun",r:"Bldg A · Room 2",h:20},{id:2,n:"Sittie Abdul",r:"Bldg C · Room 4",h:300},{id:3,n:"Dan Villareal",r:"Bldg B · Room 5",h:140}];
 var vid=function(p){return "v-"+p.replace(" ","-")};
-var PIDX={Dashboard:0,Buildings:1,Requests:2,Payments:3,"QR code":4};
+var PIDX={Dashboard:0,Buildings:1,Requests:2,Payments:3,"QR code":4,Profile:5};
+var PROF={name:"Liza Macapagal",email:"liza@example.com",phone:"0917 123 4821"};
+VIEWS.Profile=function(){return hd("Profile","Manage your account details and security.")+'<div class="bento">'+
+ '<section class="card c6"><h2>Edit profile</h2><div class="pf"><div class="pid"><span class="av" style="--h:215">'+ini(PROF.name)+'</span><div><b>'+esc(PROF.name)+'</b><span class="small" style="display:block">Manager · Sampaguita Dormitory</span></div></div>'+
+ fld("pn","Full name",PROF.name,'autocomplete="name"')+fld("pe","Email address",PROF.email,'type="email" inputmode="email" autocomplete="email"')+fld("pp","Phone number",PROF.phone,'type="tel" inputmode="tel" autocomplete="tel"')+
+ '<div class="err" id="perr2" role="alert"></div><button class="btn" id="svpf" disabled>Save Changes</button></div></section>'+
+ '<section class="card c6"><h2>Security</h2><div class="pf"><p class="small" style="margin:0">Choose a password with at least 8 characters.</p>'+
+ fld("cp","Current password","",'type="password" autocomplete="current-password"')+fld("np","New password","",'type="password" autocomplete="new-password"')+
+ '<div class="err" id="serr" role="alert"></div><button class="btn" id="updp">Update Password</button></div></section>'+
+ '<section class="card c12 dz"><h2>Account actions</h2><div class="acc"><div><b>Log out</b><p class="small" style="margin:2px 0 0">You will need to sign in again to manage your dormitory.</p></div><button class="btn dng" id="lo">Log Out</button></div></section></div>'};
 function plu(n,a,b){return n+" "+(new Intl.PluralRules("en").select(n)==="one"?a:b)}
 function badge(n,p){var c=n==="Payments"?p:REQ.filter(function(r){return!r.d}).length;return c?'<span class="n">'+c+'</span>':''}
 function hd(t,s){return '<div class="top"><div><h1>'+t+'</h1><p class="sub">'+s+'</p></div></div>'}
@@ -173,7 +190,8 @@ var VIEWS={
  Buildings:function(){return hd("Buildings",plu(ROOMS,"room","rooms")+".")+'<div class="bento">'+B.map(function(b){var p=Math.round(b[2]/b[3]*100);return '<section class="card c4"><h2>'+b[0]+'</h2><div class="big">'+p+'%</div><div class="small">'+b[2]+' of '+plu(b[3],"room","rooms")+' filled</div><div class="meter"><i style="width:'+p+'%"></i></div><p class="small" style="margin:0">'+b[1]+'</p></section>'}).join("")+'</div>'},
  Requests:function(){var o=REQ.filter(function(r){return!r.d}).length;return hd("Requests",o?plu(o,"student","students")+" waiting for a reply.":"You’re all caught up.")+'<section class="card" style="padding:6px 24px">'+REQ.map(function(r){return '<div class="rq'+(r.d?' gone':'')+'"><div class="rqi"><div class="rqr"><div class="who"><span class="av" style="--h:'+r.h+'">'+ini(r.n)+'</span><div><b>'+r.n+'</b><span class="small">'+r.r+'</span></div></div><div class="ra"><button class="btn sec sm" data-rq="decline" data-rid="'+r.id+'">Decline</button><button class="btn sm" data-rq="approve" data-rid="'+r.id+'">Approve</button></div></div></div></div>'}).join("")+'<div class="empty" id="rqe"'+(o?' hidden':'')+'>No pending requests. New ones show up here.</div></section>'},
  Payments:function(){var pe=T.filter(function(t){return t.s==="pending"}).length;return hd("Payments",pe?plu(pe,"receipt","receipts")+" waiting for review.":"Every receipt is reviewed.")+'<section class="card" style="padding:0;overflow:hidden">'+T.map(trow).join("")+'</section>'},
- "QR code":function(){return hd("Payment QR","Students see this when they pay rent.")+'<section class="card qrc"><div class="qr" id="qr">'+qrSvg(qrSeed)+'</div><div class="qside"><div class="kv"><span>Wallet</span><b>GCash</b></div><div class="kv"><span>Account</span><b>Liza M. · 0917 ••• 4821</b></div><button class="btn" id="up">Replace QR image</button><p class="small" id="upn" style="margin:0">Sample QR for the prototype.</p></div></section>'}};
+ "QR code":function(){return hd("Payment QR","Students see this when they pay rent.")+'<section class="card qrc"><div class="qrl"><div class="qr" id="qr">'+qrSvg(qrSeed)+'</div><button class="btn sec sm" id="up">Replace QR image</button></div><div class="qside"><div class="fld"><label for="wt">Wallet type</label><select id="wt">'+["GCash","Maya"].map(function(w){return '<option'+(w===PAY.w?' selected':'')+'>'+w+'</option>'}).join("")+'</select></div><div class="fld"><label for="an">Account name</label><input id="an" value="'+esc(PAY.name)+'" autocomplete="off"></div><div class="fld"><label for="ac">Account number</label><input id="ac" inputmode="numeric" value="'+esc(PAY.num)+'" autocomplete="off"></div><div class="err" id="perr" role="alert"></div><button class="btn" id="svp" disabled>Save details</button><p class="small" id="upn" style="margin:0">Sample QR for the prototype. Edit a field to enable saving.</p></div></section>'}
+};
 /* CRUD, payments tabs, payment details */
 var nid=200,PT="rec",bsel=null,SW=0,ARCH=[],PAY={w:"GCash",name:"Liza Macapagal",num:"0917 123 4821"};
 var RS={available:["av","chk","Available"],occupied:["oc","hom","Occupied"],maintenance:["mt","alr","Maintenance"]};
@@ -195,130 +213,27 @@ VIEWS.Payments=function(){var pe=T.filter(function(t){return t.s==="pending"}).l
  return hd("Payments",pe?plu(pe,"receipt","receipts")+" waiting for review.":"Every receipt is reviewed.")+'<div class="tabs seg" role="group" aria-label="Payments view"><button data-a="pt" data-i="rec" aria-pressed="'+!ten+'">Receipts</button><button data-a="pt" data-i="ten" aria-pressed="'+ten+'">Active tenants<span class="cn">'+T.length+'</span></button></div><section class="card'+sw()+'" style="padding:0;overflow:hidden">'+(ten?(T.length?T.map(arow).join(""):'<div class="empty">No active tenants right now.</div>')+(ARCH.length?'<p class="small" style="margin:0;padding:14px 24px">'+plu(ARCH.length,"tenant","tenants")+' moved out and archived.</p>':''):T.map(trow).join(""))+'</section>'};
 VIEWS["QR code"]=function(){return hd("Payment QR","Students see this when they pay rent.")+'<section class="card qrc"><div class="qrl"><div class="qr" id="qr">'+qrSvg(qrSeed)+'</div><button class="btn sec sm" id="up">Replace QR image</button></div><div class="qside"><div class="fld"><label for="wt">Wallet type</label><select id="wt">'+["GCash","Maya"].map(function(w){return '<option'+(w===PAY.w?' selected':'')+'>'+w+'</option>'}).join("")+'</select></div><div class="fld"><label for="an">Account name</label><input id="an" value="'+esc(PAY.name)+'" autocomplete="off"></div><div class="fld"><label for="ac">Account number</label><input id="ac" inputmode="numeric" value="'+esc(PAY.num)+'" autocomplete="off"></div><div class="err" id="perr" role="alert"></div><button class="btn" id="svp" disabled>Save details</button><p class="small" id="upn" style="margin:0">Sample QR for the prototype. Edit a field to enable saving.</p></div></section>'};
 function dirty(){var s=$("svp");if(!s||s.classList.contains("busy")||s.classList.contains("ok"))return;s.disabled=$("wt").value===PAY.w&&$("an").value.trim()===PAY.name&&$("ac").value.replace(/\D/g,"")===PAY.num.replace(/\D/g,"")}
-document.addEventListener("input",function(e){if(e.target.closest&&e.target.closest("#v-QR-code"))dirty()});
-document.addEventListener("change",function(e){if(e.target.closest&&e.target.closest("#v-QR-code"))dirty()});
-$("dlg").addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.tagName==="INPUT"){var s=$("sv");if(s)s.click()}});
-function dlgOpen(h){$("db").innerHTML=h;$("dlg").showModal()}
-function fld(id,l,v,ex){return '<div class="fld"><label for="'+id+'">'+l+'</label><input id="'+id+'" value="'+esc(v)+'" '+(ex||"")+'></div>'}
-function morph(b,a,k,fn){if(b.dataset.st)return;b.dataset.st=1;b.parentNode.classList.add("lock");b.classList.add("busy");b.innerHTML='<span class="sp"></span>'+a;
- setTimeout(function(){b.classList.remove("busy");b.classList.add("ok");b.innerHTML=ic("chk")+k},550);setTimeout(function(){$("dlg").close();fn()},1050)}
-function bform(b){dlgOpen('<h3>'+(b?"Edit building":"Add new building")+'</h3>'+fld("fn","Building name",b?b.n:"",'placeholder="e.g. Building D" autocomplete="off"')+fld("fa","Address",b?b.a:"",'placeholder="Street, barangay" autocomplete="off"')+'<div class="err" id="ferr" role="alert"></div><div class="acts"><button class="btn sec" data-a="cx">Cancel</button><button class="btn" id="sv" data-a="svb" data-i="'+(b?b.id:"")+'">'+(b?"Save changes":"Add building")+'</button></div>');setTimeout(function(){$("fn").focus()},60)}
-function rform(b,r){var oc=r&&r.st==="occupied";dlgOpen('<h3>'+(r?"Edit room":"Add new room")+'</h3><p class="small" style="margin:-8px 0 0">'+esc(b.n)+'</p>'+fld("fn","Room number",r?r.no:"",'placeholder="e.g. 6" autocomplete="off"')+'<div class="two">'+fld("rc","Capacity",r?r.cap:2,'type="number" min="1" inputmode="numeric"')+fld("rr","Monthly rate (₱)",r?r.rate:"",'type="number" min="1" inputmode="numeric" placeholder="2500"')+'</div><div class="fld"><label for="rs">Status</label><select id="rs"'+(oc?' disabled':'')+'>'+["available","occupied","maintenance"].map(function(s){return '<option value="'+s+'"'+((r?r.st:"available")===s?' selected':'')+(s==="occupied"&&!oc?' disabled':'')+'>'+RS[s][2]+'</option>'}).join("")+'</select></div><div class="err" id="ferr" role="alert"></div><div class="acts"><button class="btn sec" data-a="cx">Cancel</button><button class="btn" id="sv" data-a="svr" data-i="'+b.id+'" data-r="'+(r?r.id:"")+'">'+(r?"Save changes":"Add room")+'</button></div>');setTimeout(function(){$("fn").focus()},60)}
-function confirmDel(k,b,r){var oc=k==="b"?b.rooms.filter(function(x){return x.st==="occupied"}).length:(r.st==="occupied"?1:0),nm=k==="b"?b.n:"Room "+r.no;
- if(oc){dlgOpen('<h3>Can’t delete '+esc(nm)+'</h3><p class="small">'+(k==="b"?plu(oc,"room is","rooms are"):"This room is")+' occupied. End the tenancy first, then delete.</p><div class="acts"><button class="btn" data-a="cx">Got it</button></div>');return}
- dlgOpen("<h3>Delete "+esc(nm)+"?</h3><p class=\"small\">This can’t be undone.</p><div class=\"acts\"><button class=\"btn sec\" data-a=\"cx\">Cancel</button><button class=\"btn dng\" data-a=\"cfd\" data-k=\""+k+"\" data-i=\""+b.id+"\"></button></div>")}
-function endDlg(id){var t=T.filter(function(x){return x.id===id})[0];dlgOpen('<h3>End tenancy for '+esc(t.n)+'?</h3><p class="small">'+esc(t.r)+' becomes available right away. Payment history stays in the archive.</p><div class="acts"><button class="btn sec" data-a="cx">Keep tenant</button><button class="btn dng" data-a="cfe" data-i="'+id+'">End tenancy</button></div>')}
-function act(a,d,btn){var b=B.filter(function(x){return x.id===d.i})[0],rm=b&&d.r?b.rooms.filter(function(x){return String(x.id)===d.r})[0]:null;
- if(a==="addb")bform();
- else if(a==="editb")bform(b);
- else if(a==="delb")confirmDel("b",b);
- else if(a==="openb")swapB(d.i,btn.closest(".card"))
- else if(a==="backb")swapB(null,$("v-Buildings").querySelector("section.card"))
- else if(a==="addr")rform(b);
- else if(a==="editr")rform(b,rm);
- else if(a==="delr")confirmDel("r",b,rm);
- else if(a==="cx")$("dlg").close();
- else if(a==="pt"){PT=d.i;SW=1;refresh();SW=0}
- else if(a==="endt")endDlg(+d.i);
- else if(a==="svb"){var n=$("fn").value.trim(),ad=$("fa").value.trim(),e=$("ferr");
-  if(!n)return bad($("fn"),e,"Enter a building name.");
-  if(!ad)return bad($("fa"),e,"Enter the address so students can find it.");
-  morph(btn,"Saving","Saved",function(){if(b){b.n=n;b.a=ad}else B.push({id:"b"+nid++,n:n,a:ad,rooms:[]});refresh();toast(b?"Building updated.":"Building added.")})}
- else if(a==="svr"){var no=$("fn").value.trim(),cap=parseInt($("rc").value,10),rate=parseFloat($("rr").value),er=$("ferr");
-  if(!no)return bad($("fn"),er,"Enter a room number.");
-  if(b.rooms.some(function(x){return x.no===no&&x!==rm}))return bad($("fn"),er,"This building already has a room "+no+".");
-  if(!(cap>=1))return bad($("rc"),er,"Capacity must be at least 1.");
-  if(!(rate>0))return bad($("rr"),er,"Enter the monthly rate.");
-  var st=$("rs").value;
-  morph(btn,"Saving","Saved",function(){if(rm){rm.no=no;rm.cap=cap;rm.rate=rate;rm.st=st}else b.rooms.push({id:nid++,no:no,cap:cap,rate:rate,st:st});refresh();toast(rm?"Room updated.":"Room added.")})}
- else if(a==="cfd"){morph(btn,"Deleting","Deleted",function(){if(d.k==="b"){B.splice(B.indexOf(b),1);if(bsel===b.id)bsel=null}else b.rooms.splice(b.rooms.indexOf(rm),1);refresh();toast(d.k==="b"?"Building deleted.":"Room deleted.")})}
- else if(a==="cfe"){var id=+d.i,k=T.map(function(x){return x.id}).indexOf(id),t=T[k];
-  morph(btn,"Ending","Tenancy ended",function(){var r2=rl(t.r);if(r2)r2.st="available";T.splice(k,1);ARCH.push(t);render();refresh();toast("Tenancy ended. "+t.r+" is available.")})}
-}
-/* button + icon micro-interactions, screen-to-screen motion */
-var lastBd={},lastNP=null,RM="(prefers-reduced-motion:reduce)";
-function stag(n){n.querySelectorAll(".top,.card").forEach(function(e,i){e.style.setProperty("--i",Math.min(i,7))});n.classList.add("enter");setTimeout(function(){n.classList.remove("enter")},900)}
-function swapB(sel,from){var prev=bsel,vb=$("v-Buildings");
- var go=function(){bsel=sel;refresh();var el=null;
-  if(sel)el=vb.querySelector("section.card");
-  else{var ob=vb.querySelector('[data-a="openb"][data-i="'+prev+'"]');el=ob?ob.closest(".card"):null}
-  if(el&&document.startViewTransition)el.style.viewTransitionName="bcard"};
- if(!document.startViewTransition||matchMedia(RM).matches){SW=1;go();SW=0;return}
- if(from)from.style.viewTransitionName="bcard";
- document.startViewTransition(go).finished.then(function(){vb.querySelectorAll("*").forEach(function(e){e.style.viewTransitionName=""})},function(){})}
-document.addEventListener("pointerdown",function(e){var b=e.target.closest&&e.target.closest(".btn:not(:disabled)");if(!b||matchMedia(RM).matches)return;
- var r=b.getBoundingClientRect(),s=Math.max(r.width,r.height)*1.6,i=document.createElement("i");i.className="rip";
- i.style.cssText="width:"+s+"px;height:"+s+"px;left:"+(e.clientX-r.left-s/2)+"px;top:"+(e.clientY-r.top-s/2)+"px";b.appendChild(i);setTimeout(function(){i.remove()},560)});
-(function(){var d=$("dlg"),orig=d.close.bind(d);d.close=function(){if(!d.open||matchMedia(RM).matches){orig();return}d.classList.add("out");setTimeout(function(){d.classList.remove("out");orig()},160)}})();
-function fill(p,el){if(p==="Dashboard"){render();return}el.innerHTML=VIEWS[p]()}
-function refresh(){if(shown!=="Dashboard")fill(shown,$(vid(shown)))}
-/* spatial depth zoom: panes of glass stacked on the Z axis */
-function showView(p,prev){
- var all=[].slice.call(document.querySelectorAll(".vw"));
- all.forEach(function(v){v.getAnimations().forEach(function(a){a.cancel()});v.style.cssText="";v.hidden=v.id!==vid(shown)});
- if(p===shown)return;
- var o=$(vid(shown)),n=$(vid(p)),fwd=PIDX[p]>=PIDX[shown],E="cubic-bezier(.23,1,.32,1)";
- window.scrollTo(0,0);
- fill(p,n);
- if(matchMedia(RM).matches){o.hidden=true;n.hidden=false;shown=p;if(p==="Dashboard")tabInd();return}
- o.style.cssText="position:absolute;top:"+o.offsetTop+"px;left:"+o.offsetLeft+"px;width:"+o.offsetWidth+"px;z-index:1;pointer-events:none;transform-origin:50% 160px";
- n.style.cssText="position:relative;z-index:2;transform-origin:50% 160px";
- n.hidden=false;shown=p;if(p==="Dashboard")tabInd();stag(n);
- var out=o.animate([{opacity:1,transform:"scale(1)",filter:"blur(0px)"},{opacity:0,transform:"scale("+(fwd?.94:1.05)+")",filter:"blur(4px)"}],{duration:420,easing:E,fill:"forwards"});
- n.animate([{opacity:0,transform:"scale("+(fwd?1.04:.95)+")",filter:"blur(5px)"},{opacity:1,transform:"scale(1)",filter:"blur(0px)"}],{duration:460,easing:E});
- out.onfinish=function(){o.hidden=true;out.cancel();o.style.cssText="";n.style.cssText=""}}
-function showViewOld(p,prev){
- var all=[].slice.call(document.querySelectorAll(".vw"));
- all.forEach(function(v){v.getAnimations().forEach(function(a){a.cancel()});v.hidden=v.id!==vid(shown)});
- if(p===shown)return;
- var o=$(vid(shown)),n=$(vid(p)),dir=PIDX[p]>=PIDX[shown]?1:-1,E="cubic-bezier(.23,1,.32,1)";
- fill(p,n);
- if(matchMedia("(prefers-reduced-motion:reduce)").matches){o.hidden=true;n.hidden=false;shown=p;return}
- var out=o.animate([{opacity:1,transform:"none",filter:"blur(0px)"},{opacity:0,transform:"translateX("+(-dir*18)+"px)",filter:"blur(2px)"}],{duration:140,easing:E,fill:"forwards"});
- out.onfinish=function(){o.hidden=true;out.cancel();shown=p;n.hidden=false;window.scrollTo(0,0);stag(n);
-  n.animate([{opacity:0,transform:"translateX("+(dir*18)+"px)",filter:"blur(2px)"},{opacity:1,transform:"none",filter:"blur(0px)"}],{duration:280,easing:E})}}
-/* 3. shake on error */
-function bad(f,m,t){m.textContent=t;f.classList.add("error");f.focus();
- if(!matchMedia(RM).matches)f.animate({translate:["0px","-10px","10px","-6px","6px","-3px","3px","0px"]},{duration:360,easing:"ease-out"})}
-document.addEventListener("input",function(e){if(e.target.classList)e.target.classList.remove("error")});
-
-/* 4. directional slide between two steps */
-function slideSwap(host,dir,change){
- var old=host.querySelector("section.card");
- if(!old||matchMedia(RM).matches){change();return}
- var hr=host.getBoundingClientRect(),r=old.getBoundingClientRect(),ghost=old.cloneNode(true);
- change();
- var nw=host.querySelector("section.card");if(!nw)return;
- host.style.position="relative";host.style.overflowX="clip";
- ghost.style.cssText="position:absolute;top:"+(r.top-hr.top)+"px;left:"+(r.left-hr.left)+"px;width:"+r.width+"px;margin:0;pointer-events:none";
- host.appendChild(ghost);
- var o={duration:350,easing:"cubic-bezier(.77,0,.175,1)"};
- ghost.animate({translate:["0px 0px",(-dir*100)+"% 0px"]},o).onfinish=function(){ghost.remove();host.style.position="";host.style.overflowX=""};
- nw.animate({translate:[(dir*100)+"% 0px","0px 0px"]},o)}
-
-/* 7. instant theme switch + remember the choice */
-$("theme").addEventListener("click",function(){
- var r=document.documentElement,dark=r.dataset.theme?r.dataset.theme=== "dark":matchMedia("(prefers-color-scheme:dark)").matches,next=dark?"light":"dark";
- r.classList.add("theme-switching");r.dataset.theme=next;try{localStorage.setItem("fyr-theme",next)}catch(x){}
- requestAnimationFrame(function(){requestAnimationFrame(function(){r.classList.remove("theme-switching")})})});
-
-/* 8. tooltip: 600ms to open, then neighbours open instantly for 300ms */
-var tip=document.createElement("div");tip.id="tip";tip.setAttribute("role","tooltip");document.body.appendChild(tip);
-var tipT=0,tipLast=0,tipOn=false,TIP_DELAY=600,TIP_SKIP=300;
-function tipEl(t){var el=t.closest&&t.closest("[title],[data-tip]");if(el&&el.hasAttribute("title")){el.dataset.tip=el.getAttribute("title");el.removeAttribute("title")}return el&&el.dataset.tip?el:null}
-function tipShow(el,instant){tip.textContent=el.dataset.tip;var r=el.getBoundingClientRect();tip.classList.toggle("instant",instant);tip.style.left=Math.min(innerWidth-8,Math.max(8,r.left+r.width/2))+"px";tip.style.top=(r.bottom+8)+"px";tip.classList.add("on");tipOn=true}
-function tipHide(){clearTimeout(tipT);if(tipOn)tipLast=performance.now();tipOn=false;tip.classList.remove("on")}
-function tipGo(el){clearTimeout(tipT);if(tipOn||performance.now()-tipLast<TIP_SKIP)tipShow(el,true);else tipT=setTimeout(function(){tipShow(el,false)},TIP_DELAY)}
-document.addEventListener("pointerover",function(e){if(e.pointerType=== "touch")return;var el=tipEl(e.target);if(el&&!(e.relatedTarget&&el.contains(e.relatedTarget)))tipGo(el)});
-document.addEventListener("pointerout",function(e){var el=e.target.closest&&e.target.closest("[data-tip]");if(el&&!(e.relatedTarget&&el.contains(e.relatedTarget)))tipHide()});
-document.addEventListener("pointerdown",tipHide);
-document.addEventListener("focusin",function(e){if(e.target.matches&&e.target.matches(" :focus-visible")){var el=tipEl(e.target);if(el)tipShow(el,true)}});
-document.addEventListener("focusout",tipHide);
-
-/* 9. velocity spring (bounce 0, about 0.5s) that keeps the finger's speed */
-function spring(from,to,v,step,done){var k=158,c=25,x=from,last=performance.now();
- (function f(now){var h=Math.min(.032,(now-last)/1000);last=now;for(var i=0;i<4;i++){var dt=h/4;v+=(-k*(x-to)-c*v)*dt;x+=v*dt}step(x);
-  if(Math.abs(x-to)>.4||Math.abs(v)>8)requestAnimationFrame(f);else{step(to);if(done)done()}})(last)}
-
-render();
-syncLights(true);
+function pbad(f,m,t){if(typeof bad==="function")bad(f,m,t);else{m.textContent=t;f.focus()}}function profDirty(){var s=$("svpf");if(!s||s.classList.contains("busy")||s.classList.contains("ok"))return;s.disabled=$("pn").value.trim()===PROF.name&&$("pe").value.trim()===PROF.email&&$("pp").value.trim()===PROF.phone}
+document.addEventListener("click",function(e){
+ var b=e.target.closest("button");if(!b)return;
+ if(b.id=== "me"){if(page!== "Profile"){var pv=page;page="Profile";nav();showView("Profile",pv)}return}
+ if(b.id=== "svpf"){saveProf(b);return}
+ if(b.id=== "updp"){savePw(b);return}
+ if(b.id=== "lo"){dlgOpen('<h3>Log out of Find Your Room?</h3><p class="small">You\u2019ll need to sign in again to manage your dormitory.</p><div class="acts"><button class="btn sec" data-a="cx">Stay signed in</button><button class="btn dng" id="lo2">Log Out</button></div>');return}
+ if(b.id=== "lo2"){morph(b,"Logging out","Logged out",function(){toast("Logged out. Redirecting to login...")});return}
+});
+document.addEventListener("input",function(e){if(e.target.closest&&e.target.closest("#v-Profile")){profDirty();var f=e.target.closest(".pf"),m=f&&f.querySelector(".err");if(m)m.textContent=""}});
+function btnFlow(b,busy,done,fn,label){b.classList.add("busy");b.innerHTML='<span class="sp"></span>'+busy;
+ setTimeout(function(){b.classList.remove("busy");b.classList.add("ok");b.innerHTML=ic("chk")+done;fn()},650);
+ setTimeout(function(){b.classList.remove("ok");b.textContent=label},2000)}
+function saveProf(b){var n=$("pn").value.trim(),em=$("pe").value.trim(),ph=$("pp").value.trim(),er=$("perr2");
+ if(!n)return pbad($("pn"),er,"Enter your full name.");
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em))return pbad($("pe"),er,"Enter a valid email address.");
+ if(ph.replace(/\D/g,"").length<10)return pbad($("pp"),er,"Phone number should have at least 10 digits.");
+ btnFlow(b,"Saving","Saved",function(){PROF={name:n,email:em,phone:ph};document.querySelector("#me .av").textContent=ini(n);document.querySelector("#v-Profile .pid .av").textContent=ini(n);document.querySelector("#v-Profile .pid b").textContent=n;toast("Profile updated successfully.")},"Save Changes");
+ setTimeout(function(){b.disabled=true},2000)}
+function savePw(b){var cp=$("cp"),np=$("np"),er=$("serr");
+ if(!cp.value)return pbad(cp,er,"Enter your current password.");
+ if(np.value.length<8)return pbad(np,er,"New password needs at least 8 characters.");
+ if(np.value===cp.value)return pbad(np,er,"Choose a password different from the current one.");
+ btnFlow(b,"Updating","Updated",function(){cp.value="";np.value="";toast("Password updated.")},"Update Password")}
