@@ -56,11 +56,50 @@
      <div class="tabs" id="tabs"></div></div></div>
     <div id="rows"></div></section>
   </div>
- </div><div class="vw" id="v-Buildings" hidden></div><div class="vw" id="v-Requests" hidden></div><div class="vw" id="v-Payments" hidden></div><div class="vw" id="v-QR-code" hidden></div><div class="vw" id="v-Profile" hidden></div></main>
+ </div><div class="vw" id="v-Buildings" hidden></div><div class="vw" id="v-Requests" hidden></div><div class="vw" id="v-Payments" hidden></div><div class="vw" id="v-QR-code" hidden></div><div class="vw" id="v-Profile" hidden></div>
+ </main>
 </div>
 <nav class="bot" id="bot" aria-label="Main"><span class="lt" aria-hidden="true"></span><div id="botb"></div></nav>
 </div>
+<div id="student-dashboard-wrapper" hidden>
+<div class="pb" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+<div class="pb b" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+<div class="app">
+ <header class="tbar"><div class="tin">
+  <div class="brand"><span class="logo"><svg class="i"><use href="#hom"/></svg></span><span>Find Your Room</span></div>
+  <nav id="student-nav" class="tnav" aria-label="Student main"><span class="lt" aria-hidden="true"></span><div class="tb" id="student-navb"></div></nav>
+  <button class="ibtn" id="student-theme" type="button" aria-label="Switch light or dark theme" title="Switch theme"><svg class="i moon"><use href="#moon"/></svg><svg class="i sun"><use href="#sun"/></svg></button><button class="me" id="student-me" type="button" title="Profile" aria-label="Open profile"><span class="av" style="--h:215">AD</span><span class="mt">Student</span></button>
+ </div></header>
+ <main class="main">
+  <section class="vw" id="v-student-Dashboard">
+  <div class="top"><div><h1>Student Dashboard</h1><p class="sub">Welcome back, Angel</p></div></div>
+  <div class="bento">
+   <section class="card c6" aria-label="My Room"><h2>My Room</h2><div class="who"><span class="av" style="--h:215">AD</span><div><b>Building A · Room 3</b><span class="small">Manager: Liza Macapagal</span></div></div><p class="amt">₱2,500/month</p><span class="chip act"><svg class="i" aria-hidden="true"><use href="#chk"/></svg>Active</span><p style="margin:16px 0 0"><button class="btn sec" id="moveout-btn" type="button">Request Move-out</button></p></section>
+   <section class="card c6" aria-label="Rent Status"><h2>Rent Status</h2><div class="big">₱2,500</div><p class="small">November rent · Due Nov 5</p><span class="chip pending"><svg class="i" aria-hidden="true"><use href="#clk"/></svg>Awaiting Review</span><p><button class="btn" id="pay-rent" type="button">Pay Rent Now</button></p></section>
+   <section class="card c12 student-ledger-card" aria-label="Payment ledger"><div class="lh"><h2>Payment Ledger</h2></div><div class="student-ledger"><table><thead><tr><th>Month</th><th>Amount</th><th>Ref No</th><th>Status</th></tr></thead><tbody><tr><td>October 2026</td><td>₱2,500</td><td>GC-77120418</td><td><span class="chip paid">Paid</span></td></tr><tr><td>September 2026</td><td>₱2,500</td><td>GC-63210854</td><td><span class="chip paid">Paid</span></td></tr><tr><td>August 2026</td><td>₱2,500</td><td>GC-51843029</td><td><span class="chip paid">Paid</span></td></tr></tbody></table></div></section>
+  </div>
+ </section>
+ <section class="vw" id="v-student-Find-a-Room" hidden></section>
+ <section class="vw" id="v-student-My-Payments" hidden></section>
+ <section class="vw" id="v-student-Profile" hidden></section>
+ </main>
+</div>
+<nav class="bot" id="student-bot" aria-label="Student main"><span class="lt" aria-hidden="true"></span><div id="student-botb"></div></nav>
+</div>
 <dialog id="dlg" aria-label="Review receipt"><div class="grab" id="grab"><i></i></div><div class="dlg" id="db"></div></dialog>
+<dialog id="pay-modal" aria-label="Submit rent payment"><div class="grab"><i></i></div><form class="dlg" id="payment-form">
+ <h3>Pay Rent</h3><div class="qr-placeholder" role="img" aria-label="Manager payment QR code placeholder">Manager's QR Code</div>
+ <div class="fld"><label for="receipt-upload">Upload Receipt</label><input id="receipt-upload" type="file" accept="image/*" required></div>
+ <div class="fld"><label for="payment-reference">Reference Number</label><input id="payment-reference" type="text" required placeholder="Enter your payment reference"></div>
+ <div class="acts"><button class="btn sec" id="cancel-payment" type="button">Cancel</button><button class="btn" type="submit">Submit Payment</button></div>
+ </form></dialog>
+<dialog id="moveout-modal" aria-labelledby="moveout-title"><div class="grab"><i></i></div><form class="dlg" id="moveout-form" novalidate>
+ <h3 id="moveout-title">Request move-out</h3>
+ <div class="mo-warn" role="note"><svg class="i" aria-hidden="true"><use href="#alr"/></svg><div><b>Are you sure you want to leave <span id="moveout-room">Building A · Room 3</span>?</b><span class="small">Your manager will review this request. You keep the room until it is approved.</span></div></div>
+ <div class="fld"><label for="moveout-reason">Reason for leaving</label><textarea id="moveout-reason" required placeholder="e.g., Moving to a different city, noise, found a cheaper place"></textarea></div>
+ <div class="err" id="moveout-err" role="alert"></div>
+ <div class="acts"><button class="btn sec" id="cancel-moveout" type="button">Cancel</button><button class="btn" type="submit">Submit Request</button></div>
+ </form></dialog>
 <div class="toast" id="toast" role="status"></div>
 <div id="auth-screen" class="auth-container" hidden>
  <div class="auth-box" id="auth-box">
@@ -70,6 +109,9 @@
      <h2 id="t-login">Log in</h2><p class="small" style="margin:0">Welcome back. Pick up where you left off.</p>
      <div class="fld"><label for="li-email">Email</label><input id="li-email" type="email" required autocomplete="email" placeholder="you@example.com"></div>
      <div class="fld"><label for="li-pw">Password</label><input id="li-pw" type="password" required autocomplete="current-password" placeholder="Your password"></div>
+     <div class="role" role="radiogroup" aria-labelledby="role-login-label"><span class="rlab" id="role-login-label">I am a</span>
+      <label><input type="radio" name="role" value="Student"><span class="pill">Student</span></label>
+      <label><input type="radio" name="role" value="Manager" checked><span class="pill">Manager</span></label></div>
      <button class="btn" type="submit">Log In</button>
      <div class="or"><span>or</span></div>
      <button class="btn sec gbtn" type="button" data-auth="google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Log In with Google</button>
@@ -81,7 +123,7 @@
      <div class="fld"><label for="rg-name">Name</label><input id="rg-name" required autocomplete="name" placeholder="Your full name"></div>
      <div class="fld"><label for="rg-email">Email</label><input id="rg-email" type="email" required autocomplete="email" placeholder="you@example.com"></div>
      <div class="fld"><label for="rg-pw">Password</label><input id="rg-pw" type="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters"></div>
-     <div class="role" role="radiogroup" aria-labelledby="rl"><span class="rlab" id="rl">I am a</span>
+     <div class="role" role="radiogroup" aria-labelledby="role-register-label"><span class="rlab" id="role-register-label">I am a</span>
       <label><input type="radio" name="role" value="Student"><span class="pill">Student</span></label>
       <label><input type="radio" name="role" value="Manager" checked><span class="pill">Manager</span></label></div>
      <button class="btn" type="submit">Register</button>
