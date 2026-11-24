@@ -21,7 +21,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px soli
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
 h1{margin:0;font-size:clamp(22px,3.4vw,30px);font-weight:800;letter-spacing:-.02em;line-height:1.15}
 .sub{margin:4px 0 0;color:var(--mute)}
-.me{display:flex;align-items:center;gap:10px;font-family:inherit;font-weight:600;color:var(--ink);background:transparent;border:0;border-radius:12px;padding:4px 6px;min-height:44px}
+.me{display:flex;align-items:center;gap:10px;font-weight:600}
 .av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:hsl(var(--h,220) 70% var(--avl));color:hsl(var(--h,220) 60% var(--avt));flex:none}
 .bento{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
 .card{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--sh);min-width:0}
@@ -257,7 +257,7 @@ input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display
 .qrl{display:grid;gap:12px;justify-items:center}
 @keyframes vin{from{opacity:0;transform:translateY(8px);filter:blur(2px)}}
 .sw{animation:vin .28s var(--out)}
-@keyframes zin{from{opacity:0;scale:.97;filter:blur(2px)}}
+@keyframes zin{from{opacity:0;transform:scale(.96);filter:blur(2px)}}
 @media (min-width:761px){dialog{margin:auto;height:auto;max-height:90dvh;width:min(440px,calc(100% - 32px));border-radius:22px}dialog[open]{animation-name:zin}.dlg{min-height:0}.arow{grid-template-columns:2fr 1fr 1fr 1fr auto}}
 @media (max-width:760px){.rrow{grid-template-columns:1fr auto;padding:12px 20px}.rrow>:nth-child(2){display:none}.two{grid-template-columns:1fr}.ibtn{width:40px;height:40px}}
 /* button + icon micro-interactions, screen-to-screen motion */
@@ -293,56 +293,9 @@ dialog.out::backdrop{animation:fadeo .16s var(--out) forwards}
 ::view-transition-group(bcard){animation-duration:.42s;animation-timing-function:cubic-bezier(.23,1,.32,1)}
 .main{position:relative;overflow-x:clip}
 @keyframes rise{from{opacity:0;transform:translateY(8px) scale(.985);filter:blur(2px)}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-
-/* ===== Emil Kowalski details ===== */
-:root{interpolate-size:allow-keywords}
-
-/* 1. scale from .97, never from 0 */
-@keyframes zin{from{opacity:0;scale:.97;filter:blur(2px)}}
-@keyframes pop{from{opacity:0;scale:.9}}
-dialog[open]{animation-duration:250ms;animation-timing-function:cubic-bezier(.32,.72,0,1)}
-.srch .clr{transform:none;scale:.8;transition:width .25s var(--out),opacity .2s,scale .25s var(--out)}
-.srch.has .clr{scale:1}
-
-/* 2. press feedback: its own `scale` property, so it never fights the hover lift */
-button,.btn{transition:scale 150ms ease-out,transform .2s var(--out),box-shadow .2s var(--out),background-color .25s,color .25s}
-.acts .btn{transition:scale 150ms ease-out,flex-grow .35s var(--out),background-color .25s,color .25s,opacity .2s,padding .3s var(--out),transform .2s var(--out)}
-.tnav .nav{transition:scale 150ms ease-out,color .2s .1s}
-button:not(:disabled):active{scale:.97}
-.btn:active,.link:active,.tabs button:active,.nav:active,.bot button:active,.btn:not(:disabled):active{transform:none}
-.btn:not(:disabled):active{box-shadow:none}
-
-/* 3. error state for the shake */
-.fld input.error,.fld select.error,textarea.error{box-shadow:0 0 0 2px var(--er)}
-textarea.error{border-color:var(--er)}
-
-/* 5. smooth height: auto (the reject-reason field) */
-.reveal{height:0;overflow:clip;transition:height 250ms cubic-bezier(.77,0,.175,1)}
-.reveal.open{height:auto}
-.rvi{display:grid;gap:6px;padding:2px 0 4px}
-
-/* 6. transform, not left/top/width */
-.tind{left:0;top:0;transition:transform .3s var(--out),width .3s var(--out),height .3s var(--out)}
-@keyframes grow{from{transform:scaleX(0)}}
-.meter i{transform-origin:left}
-
-/* 7. instant theme switch */
-.theme-switching *,.theme-switching *::before,.theme-switching *::after{transition:none!important}
-#theme .sun{display:none}
-:root[data-theme="dark"] #theme .sun{display:block}
-:root[data-theme="dark"] #theme .moon{display:none}
-@media (prefers-color-scheme:dark){:root:not([data-theme]) #theme .sun{display:block}:root:not([data-theme]) #theme .moon{display:none}}
-
-/* 8. tooltip */
-#tip{position:fixed;z-index:60;transform:translateX(-50%) translateY(-2px);background:var(--ink);color:var(--surf);padding:5px 9px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s ease-out,transform .12s var(--out)}
-#tip.on{opacity:1;transform:translateX(-50%)}
-#tip.instant{transition-duration:0s}
-
-/* Profile view */
-.me-wrap{display:flex;align-items:center;gap:8px}
-.me{display:flex;align-items:center;gap:10px;font-family:inherit;font-weight:600;color:var(--ink);background:transparent;border:0;border-radius:12px;padding:4px 6px;min-height:44px}
-.me:hover,.me[aria-current]{background:var(--pri-s);color:var(--pri)}
+/* profile */
+.me{border:0;background:transparent;color:inherit;font:inherit;font-weight:600;padding:4px 10px 4px 4px;border-radius:14px;min-height:44px;cursor:pointer;transition:background-color .2s}
+.me:hover,.me[aria-current]{background:var(--pri-s)}
 .me:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
 .lt{transition:opacity .25s var(--out)}
 .tnav.off .lt,.bot.off .lt{opacity:0}
@@ -353,3 +306,33 @@ textarea.error{border-color:var(--er)}
 .acc{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .card.dz{box-shadow:0 0 0 1px rgba(198,40,40,.28)}
 @media (max-width:1000px){.c6{grid-column:span 12}}
+/* ===== Emil Kowalski details ===== */
+:root{interpolate-size:allow-keywords}
+@keyframes zin{from{opacity:0;scale:.97;filter:blur(2px)}}
+@keyframes pop{from{opacity:0;scale:.9}}
+dialog[open]{animation-duration:250ms;animation-timing-function:cubic-bezier(.32,.72,0,1)}
+.srch .clr{transform:none;scale:.8;transition:width .25s var(--out),opacity .2s,scale .25s var(--out)}
+.srch.has .clr{scale:1}
+button,.btn{transition:scale 150ms ease-out,transform .2s var(--out),box-shadow .2s var(--out),background-color .25s,color .25s,opacity .2s,filter .2s}
+.acts .btn{transition:scale 150ms ease-out,flex-grow .35s var(--out),background-color .25s,color .25s,opacity .2s,padding .3s var(--out),transform .2s var(--out)}
+.tnav .nav{transition:scale 150ms ease-out,color .2s .1s}
+button:not(:disabled):active{scale:.97}
+.btn:active,.link:active,.tabs button:active,.nav:active,.bot button:active,.btn:not(:disabled):active{transform:none}
+.btn:not(:disabled):active{box-shadow:none}
+.fld input.error,.fld select.error,textarea.error{box-shadow:0 0 0 2px var(--er)}
+textarea.error{border-color:var(--er)}
+.reveal{height:0;overflow:clip;transition:height 250ms cubic-bezier(.77,0,.175,1)}
+.reveal.open{height:auto}
+.rvi{display:grid;gap:6px;padding:2px 0 4px}
+.tind{left:0;top:0;transition:transform .3s var(--out),width .3s var(--out),height .3s var(--out)}
+@keyframes grow{from{transform:scaleX(0)}}
+.meter i{transform-origin:left}
+.theme-switching *,.theme-switching *::before,.theme-switching *::after{transition:none!important}
+#theme .sun{display:none}
+:root[data-theme="dark"] #theme .sun{display:block}
+:root[data-theme="dark"] #theme .moon{display:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme]) #theme .sun{display:block}:root:not([data-theme]) #theme .moon{display:none}}
+#tip{position:fixed;z-index:60;transform:translateX(-50%) translateY(-2px);background:var(--ink);color:var(--surf);padding:5px 9px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s ease-out,transform .12s var(--out)}
+#tip.on{opacity:1;transform:translateX(-50%)}
+#tip.instant{transition-duration:0s}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
