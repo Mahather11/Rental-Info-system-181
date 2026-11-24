@@ -1,3 +1,4 @@
+
 try{var th=localStorage.getItem("fyr-theme");if(th)document.documentElement.dataset.theme=th}catch(x){}
 var ROOMS=24,OCC=19,PREV=[38400,41200,39800,44100,42600];
 var MON=["Jun","Jul","Aug","Sep","Oct","Nov"];
@@ -69,7 +70,7 @@ document.addEventListener("click",function(e){
  if(b.id==="svpf"){saveProf(b);return}
  if(b.id==="updp"){savePw(b);return}
  if(b.id==="lo"){dlgOpen('<h3>Log out of Find Your Room?</h3><p class="small">You\u2019ll need to sign in again to manage your dormitory.</p><div class="acts"><button class="btn sec" data-a="cx">Stay signed in</button><button class="btn dng" id="lo2">Log Out</button></div>');return}
- if(b.id==="lo2"){morph(b,"Logging out","Logged out",function(){toast("Logged out. Redirecting to login...")});return}
+ if(b.id==="lo2"){morph(b,"Logging out","Logged out",function(){toast("Logged out. Redirecting to login...");showAuth()});return}
  if(b.id==="clr"){$("s").value="";Q="";$("s").parentNode.classList.remove("has");render();$("s").focus();return}
  if(b.dataset.rq){var rid=+b.dataset.rid,r=REQ.filter(function(x){return x.id===rid})[0],row=b.closest(".rq"),ap=b.dataset.rq==="approve";if(r.d)return;r.d=1;if(ap)occupy(r);
   row.querySelector(".ra").innerHTML='<span class="chip pop '+(ap?"paid":"rejected")+'">'+ic(ap?"chk":"alr")+(ap?"Approved":"Declined")+'</span>';
@@ -359,5 +360,40 @@ function spring(from,to,v,step,done){var k=158,c=25,x=from,last=performance.now(
   spring(dy,out?innerHeight:0,vy,function(x){d.style.transform="translateY("+x+"px)"},function(){if(out)HTMLDialogElement.prototype.close.call(d);d.style.transform=""})}
  g.addEventListener("pointerup",end);g.addEventListener("pointercancel",end)})();
 
+/* ===== AUTH: slide between dashboard, login and register ===== */
+var dw=$("dashboard-wrapper"),au=$("auth-screen"),abox=$("auth-box"),EZ="cubic-bezier(.23,1,.32,1)";
+function reduced(){return matchMedia(RM).matches}
+function authSet(on){abox.classList.toggle("right-panel-active",on);$("pane-login").inert=on;$("pane-register").inert=!on;
+ var f=on?$("rg-name"):$("li-email");setTimeout(function(){if(!au.hidden)f.focus({preventScroll:true})},460)}
+$("auth-register").addEventListener("click",function(){authSet(true)});
+$("auth-login").addEventListener("click",function(){authSet(false)});
+function showAuth(){
+ authSet(false);$("form-login").reset();$("form-register").reset();
+ function enter(){au.hidden=false;au.style.display="flex";
+  if(!reduced())au.animate([{opacity:0,transform:"translateY(40px) scale(.98)",filter:"blur(6px)"},{opacity:1,transform:"none",filter:"blur(0px)"}],{duration:520,easing:EZ});
+  setTimeout(function(){$("li-email").focus({preventScroll:true})},560)}
+ if(reduced()){dw.style.display="none";enter();return}
+ dw.animate([{opacity:1,transform:"scale(1)",filter:"blur(0px)"},{opacity:0,transform:"scale(.96)",filter:"blur(6px)"}],{duration:300,easing:EZ,fill:"forwards"}).onfinish=function(){dw.style.display="none";dw.getAnimations().forEach(function(a){a.cancel()});enter()}}
+function showDash(){
+ function enter(){dw.style.display="";
+  [].forEach.call(document.querySelectorAll(".vw"),function(x){x.getAnimations().forEach(function(a){a.cancel()});x.style.cssText="";x.hidden=x.id!=="v-Dashboard"});
+  page="Dashboard";shown="Dashboard";window.scrollTo(0,0);render();syncLights(true);
+  if(!reduced())dw.animate([{opacity:0,transform:"scale(1.03)",filter:"blur(6px)"},{opacity:1,transform:"none",filter:"blur(0px)"}],{duration:520,easing:EZ})}
+ function done(){au.hidden=true;au.style.display="none";au.getAnimations().forEach(function(a){a.cancel()});enter()}
+ if(reduced()){done();return}
+ au.animate([{opacity:1,transform:"none",filter:"blur(0px)"},{opacity:0,transform:"translateY(-24px) scale(.98)",filter:"blur(6px)"}],{duration:320,easing:EZ,fill:"forwards"}).onfinish=done}
+function authFlow(b,busy,done,fn){if(b.classList.contains("busy")||b.classList.contains("ok"))return;var orig=b.innerHTML;
+ b.classList.add("busy");b.innerHTML='<span class="sp"></span>'+busy;
+ setTimeout(function(){b.classList.remove("busy");b.classList.add("ok");b.innerHTML=ic("chk")+done;setTimeout(fn,250)},650);
+ setTimeout(function(){b.classList.remove("ok");b.innerHTML=orig},2200)}
+$("form-login").addEventListener("submit",function(e){e.preventDefault();
+ authFlow(this.querySelector('[type=submit]'),"Signing in","Welcome back",function(){showDash();toast("Logged in. Welcome back!")})});
+$("form-register").addEventListener("submit",function(e){e.preventDefault();
+ var nm=$("rg-name").value.trim(),role=this.querySelector("input[name=role]:checked").value;
+ authFlow(this.querySelector('[type=submit]'),"Creating account","Account created",function(){
+  if(nm){PROF.name=nm;document.querySelector("#me .av").textContent=ini(nm)}
+  showDash();toast(role==="Student"?"Account created. The student side is coming next, so you are seeing the manager dashboard.":"Account created. Welcome, "+PROF.name.split(" ")[0]+"!")})});
+au.addEventListener("click",function(e){var g=e.target.closest("[data-auth=google]");
+ if(g)authFlow(g,"Connecting","Signed in with Google",function(){showDash();toast("Logged in with Google.")})});
 render();
 syncLights(true);
